@@ -29,33 +29,6 @@
       </tags>
   </entry>
   <entry>
-    <title>SFT和LoRA学习日志</title>
-    <url>/2025/09/19/LLM/</url>
-    <content><![CDATA[<h1 id="模型微调"><a href="#模型微调" class="headerlink" title="模型微调"></a>模型微调</h1><h2 id="监督微调（SFT）"><a href="#监督微调（SFT）" class="headerlink" title="监督微调（SFT）"></a>监督微调（SFT）</h2><div class="pdf-container" data-target="https://arxiv.org/pdf/2501.17161" data-height="500px"></div>
-
-<p>SFT是把<code>x=[BOS, s, u, c, a, EOS]</code>作为训练数据，微调模型以更好地适应特定任务或领域。</p>
-<div class="tabs" id="sft数据格式"><ul class="nav-tabs"><li class="tab active"><a href="#sft数据格式-1">BOS</a></li><li class="tab"><a href="#sft数据格式-2">s</a></li><li class="tab"><a href="#sft数据格式-3">u</a></li><li class="tab"><a href="#sft数据格式-4">c</a></li><li class="tab"><a href="#sft数据格式-5">a</a></li><li class="tab"><a href="#sft数据格式-6">EOS</a></li></ul><div class="tab-content"><div class="tab-pane active" id="sft数据格式-1"><p>序列起始的特殊token，用于稳定起始状态。</p></div><div class="tab-pane" id="sft数据格式-2"><p>给AI的元指令&#x2F;角色设定，训练时通常和user一同作为条件，但不计损失，推理时必须与训练时采用相同模板，以避免风格或格式不一。</p></div><div class="tab-pane" id="sft数据格式-3"><p>user的输入内容。</p></div><div class="tab-pane" id="sft数据格式-4"><p>使用RAG检索到的上下文片段+多轮回复的历史信息（可只用总结作为输入）（或去重按权重处理）。</p></div><div class="tab-pane" id="sft数据格式-5"><p>高质量assistant给出的回答，用于模仿这种规范化回复。我们只在a的token上计损失，其余位置打mask（label&#x3D;-100）。</p></div><div class="tab-pane" id="sft数据格式-6"><p>序列结束的特殊token，训练时通常只放在assistant段末尾，推理时遇到EOS作为停止条件之一，但注意别把EOS泄露到user&#x2F;system中，会导致模型提前停止或学到错误的停用习惯。</p></div></div></div>
-
-<p>SFT采用条件自回归（decoder-only）或条件序到序（encoder-decoder）的极大似然估计，依靠高质量、风格一致的答案将预训练分布旋转到格式合规的子分布。<br>SFT的目标是让模型在给定输入时生成更准确和相关的输出。但容易导致话多或过度自信，常用DPO&#x2F;ORPO收敛风格与拒答策略。</p>
-<p>使用RAG结果输入的方法：</p>
-<div class="tabs" id="sft"><ul class="nav-tabs"><li class="tab active"><a href="#sft-1">Soft/Prefix Tuning</a></li><li class="tab"><a href="#sft-2">Cross-Attn外部记忆</a></li><li class="tab"><a href="#sft-3">KNN-LM混合</a></li></ul><div class="tab-content"><div class="tab-pane active" id="sft-1"><p>学习一串可训练的牵入向量，只加在输入头上，用于确定风格和格式，可与LoRA叠加。</p></div><div class="tab-pane" id="sft-2"><p>采用Encoder-Decoder架构，将检索到的数据交给Encoder作为记忆，Decoder生成时用Cross-Attention随取随用。可一次编码多次读，对长上下文场景更稳定。</p></div><div class="tab-pane" id="sft-3"><p>对当前上下文信息计算查询向量q，并找到k个最近邻$(k_i, v_i)$，将距离通过温度T转为权重，即$P_{kNN}(\omega) \propto \sum_{i:v_i&#x3D;\omega} exp \big(-\frac{\lVert q - k_i \rVert ^2}{T} \big)$，通过$P(\omega) &#x3D; (1 - \lambda) P_{LM}(\omega) + \lambda P_{kNN}(\omega)$，其中$\lambda \in [0, 1]$可固定也可自适应。</p></div></div></div>
-
-<h2 id="低秩适应（LoRA）"><a href="#低秩适应（LoRA）" class="headerlink" title="低秩适应（LoRA）"></a>低秩适应（LoRA）</h2><div class="pdf-container" data-target="https://arxiv.org/pdf/2106.09685" data-height="500px"></div>
-
-<p>标准线性层输出为$y &#x3D; \tilde{W}x$，但LoRA并不直接更新$\tilde{W}$，而是在训练时学习一个低秩增量$\triangle{W} &#x3D; s \cdot AB$，而$\tilde{W} &#x3D; W + \triangle W$，秩$r \ll \min(d_{in}, d_{out})$，缩放$s &#x3D; \frac{\alpha}{r}$。<br>通常将A初始化为全零，B初始化为小随机值，这样使得$\triangle W&#x3D;0$不会破坏预训练能力，即初始函数等价于原始基座，再用$s &#x3D; \frac{\alpha}{r}$控制学习幅度，训练时只更新A和B，冻结W。<br>新增浮点运算次数$FLOPs \approx O(r \cdot (d_{in} + d_{out}))$，相比原层$O(d_{in}, d_{out})$很小，几乎不影响推理吞吐。</p>
-<p>LoRA优先插在注意力机制上（重语义），适度加在MLP（重风格&#x2F;格式）。<br>基座是指预训练好的原始模型权重$W$，在LoRA训练时被完全冻结。</p>
-<p>LoRA可采用两种推理形态：</p>
-<div class="tabs" id="lora"><ul class="nav-tabs"><li class="tab active"><a href="#lora-1">分离加载</a></li><li class="tab"><a href="#lora-2">合并权重</a></li></ul><div class="tab-content"><div class="tab-pane active" id="lora-1"><p>先加载基座权重，再加载LoRA适配器，前向时实时加$\triangle Wx$。可一份基座+多个LoRA头，以便随时切换，更灵活，基座可4&#x2F;8bit量化，直接推理，代价是每层多做两次小矩阵乘。可在资源吃紧时采用量化基座，但在合并前需要反量化到FP16再合并，同时也会影响精度。</p></div><div class="tab-pane" id="lora-2"><p>在非量化的模型副本上把$\triangle W$加回$W$，可以部署成单一权重文件，无LoRA依赖，便于再做整模型量化或裁剪。需要注意的是，量化基座上不能直接合并，需先把量化权重反量化到FP16&#x2F;FP32副本再合并，要切换到另一套LoRA时需回滚到原基座再合并，相对来说较麻烦。</p></div></div></div>]]></content>
-      <categories>
-        <category>AI</category>
-        <category>LLM</category>
-      </categories>
-      <tags>
-        <tag>SFT</tag>
-        <tag>LoRA</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Pandas学习日志</title>
     <url>/2025/09/15/Pandas/</url>
     <content><![CDATA[<h1 id="Pandas"><a href="#Pandas" class="headerlink" title="Pandas"></a>Pandas</h1><h2 id="读写"><a href="#读写" class="headerlink" title="读写"></a>读写</h2><p><code>pd.read_csv()</code>: 读取CSV文件</p>
@@ -125,6 +98,33 @@
       </categories>
       <tags>
         <tag>Pandas</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>SFT和LoRA学习日志</title>
+    <url>/2025/09/19/LLM/</url>
+    <content><![CDATA[<h1 id="模型微调"><a href="#模型微调" class="headerlink" title="模型微调"></a>模型微调</h1><h2 id="监督微调（SFT）"><a href="#监督微调（SFT）" class="headerlink" title="监督微调（SFT）"></a>监督微调（SFT）</h2><div class="pdf-container" data-target="https://arxiv.org/pdf/2501.17161" data-height="500px"></div>
+
+<p>SFT是把<code>x=[BOS, s, u, c, a, EOS]</code>作为训练数据，微调模型以更好地适应特定任务或领域。</p>
+<div class="tabs" id="sft数据格式"><ul class="nav-tabs"><li class="tab active"><a href="#sft数据格式-1">BOS</a></li><li class="tab"><a href="#sft数据格式-2">s</a></li><li class="tab"><a href="#sft数据格式-3">u</a></li><li class="tab"><a href="#sft数据格式-4">c</a></li><li class="tab"><a href="#sft数据格式-5">a</a></li><li class="tab"><a href="#sft数据格式-6">EOS</a></li></ul><div class="tab-content"><div class="tab-pane active" id="sft数据格式-1"><p>序列起始的特殊token，用于稳定起始状态。</p></div><div class="tab-pane" id="sft数据格式-2"><p>给AI的元指令&#x2F;角色设定，训练时通常和user一同作为条件，但不计损失，推理时必须与训练时采用相同模板，以避免风格或格式不一。</p></div><div class="tab-pane" id="sft数据格式-3"><p>user的输入内容。</p></div><div class="tab-pane" id="sft数据格式-4"><p>使用RAG检索到的上下文片段+多轮回复的历史信息（可只用总结作为输入）（或去重按权重处理）。</p></div><div class="tab-pane" id="sft数据格式-5"><p>高质量assistant给出的回答，用于模仿这种规范化回复。我们只在a的token上计损失，其余位置打mask（label&#x3D;-100）。</p></div><div class="tab-pane" id="sft数据格式-6"><p>序列结束的特殊token，训练时通常只放在assistant段末尾，推理时遇到EOS作为停止条件之一，但注意别把EOS泄露到user&#x2F;system中，会导致模型提前停止或学到错误的停用习惯。</p></div></div></div>
+
+<p>SFT采用条件自回归（decoder-only）或条件序到序（encoder-decoder）的极大似然估计，依靠高质量、风格一致的答案将预训练分布旋转到格式合规的子分布。<br>SFT的目标是让模型在给定输入时生成更准确和相关的输出。但容易导致话多或过度自信，常用DPO&#x2F;ORPO收敛风格与拒答策略。</p>
+<p>使用RAG结果输入的方法：</p>
+<div class="tabs" id="sft"><ul class="nav-tabs"><li class="tab active"><a href="#sft-1">Soft/Prefix Tuning</a></li><li class="tab"><a href="#sft-2">Cross-Attn外部记忆</a></li><li class="tab"><a href="#sft-3">KNN-LM混合</a></li></ul><div class="tab-content"><div class="tab-pane active" id="sft-1"><p>学习一串可训练的牵入向量，只加在输入头上，用于确定风格和格式，可与LoRA叠加。</p></div><div class="tab-pane" id="sft-2"><p>采用Encoder-Decoder架构，将检索到的数据交给Encoder作为记忆，Decoder生成时用Cross-Attention随取随用。可一次编码多次读，对长上下文场景更稳定。</p></div><div class="tab-pane" id="sft-3"><p>对当前上下文信息计算查询向量q，并找到k个最近邻$(k_i, v_i)$，将距离通过温度T转为权重，即$P_{kNN}(\omega) \propto \sum_{i:v_i&#x3D;\omega} exp \big(-\frac{\lVert q - k_i \rVert ^2}{T} \big)$，通过$P(\omega) &#x3D; (1 - \lambda) P_{LM}(\omega) + \lambda P_{kNN}(\omega)$，其中$\lambda \in [0, 1]$可固定也可自适应。</p></div></div></div>
+
+<h2 id="低秩适应（LoRA）"><a href="#低秩适应（LoRA）" class="headerlink" title="低秩适应（LoRA）"></a>低秩适应（LoRA）</h2><div class="pdf-container" data-target="https://arxiv.org/pdf/2106.09685" data-height="500px"></div>
+
+<p>标准线性层输出为$y &#x3D; \tilde{W}x$，但LoRA并不直接更新$\tilde{W}$，而是在训练时学习一个低秩增量$\triangle{W} &#x3D; s \cdot AB$，而$\tilde{W} &#x3D; W + \triangle W$，秩$r \ll \min(d_{in}, d_{out})$，缩放$s &#x3D; \frac{\alpha}{r}$。<br>通常将A初始化为全零，B初始化为小随机值，这样使得$\triangle W&#x3D;0$不会破坏预训练能力，即初始函数等价于原始基座，再用$s &#x3D; \frac{\alpha}{r}$控制学习幅度，训练时只更新A和B，冻结W。<br>新增浮点运算次数$FLOPs \approx O(r \cdot (d_{in} + d_{out}))$，相比原层$O(d_{in}, d_{out})$很小，几乎不影响推理吞吐。</p>
+<p>LoRA优先插在注意力机制上（重语义），适度加在MLP（重风格&#x2F;格式）。<br>基座是指预训练好的原始模型权重$W$，在LoRA训练时被完全冻结。</p>
+<p>LoRA可采用两种推理形态：</p>
+<div class="tabs" id="lora"><ul class="nav-tabs"><li class="tab active"><a href="#lora-1">分离加载</a></li><li class="tab"><a href="#lora-2">合并权重</a></li></ul><div class="tab-content"><div class="tab-pane active" id="lora-1"><p>先加载基座权重，再加载LoRA适配器，前向时实时加$\triangle Wx$。可一份基座+多个LoRA头，以便随时切换，更灵活，基座可4&#x2F;8bit量化，直接推理，代价是每层多做两次小矩阵乘。可在资源吃紧时采用量化基座，但在合并前需要反量化到FP16再合并，同时也会影响精度。</p></div><div class="tab-pane" id="lora-2"><p>在非量化的模型副本上把$\triangle W$加回$W$，可以部署成单一权重文件，无LoRA依赖，便于再做整模型量化或裁剪。需要注意的是，量化基座上不能直接合并，需先把量化权重反量化到FP16&#x2F;FP32副本再合并，要切换到另一套LoRA时需回滚到原基座再合并，相对来说较麻烦。</p></div></div></div>]]></content>
+      <categories>
+        <category>AI</category>
+        <category>LLM</category>
+      </categories>
+      <tags>
+        <tag>SFT</tag>
+        <tag>LoRA</tag>
       </tags>
   </entry>
 </search>
