@@ -23,29 +23,30 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"shadow221213.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.25.0","exturl":true,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":true,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"shadow221213.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.25.0","exturl":true,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"show_result":true,"style":"default"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":true,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqusjs","storage":true,"lazyload":false,"nav":{"disqusjs":{"text":"Disqus","order":-1}},"activeClass":"disqusjs"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":3,"unescape":false,"preload":false}}</script><script src="/js/config.js" defer></script>
 
-    <meta name="description" content="模型微调监督微调（SFT）SFT是把x&#x3D;[BOS, s, u, c, a, EOS]作为训练数据，即，微调模型以更好地适应特定任务或领域。BOS是序列起始的特殊token，用于稳定起始状态；s是system内容，是给AI的元指令&#x2F;角色设定，训练时通常和user一同作为条件，但不计损失，推理时必须与训练时采用相同模板，以避免风格或格式不一；u是user的输入内容；c是使用RAG检索到的co">
+    <meta name="description" content="模型微调监督微调（SFT）  SFT是把x&#x3D;[BOS, s, u, c, a, EOS]作为训练数据，微调模型以更好地适应特定任务或领域。 BOSsucaEOS序列起始的特殊token，用于稳定起始状态。给AI的元指令&#x2F;角色设定，训练时通常和user一同作为条件，但不计损失，推理时必须与训练时采用相同模板，以避免风格或格式不一。user的输入内容。使用RAG检索到的上下文片段+多轮回复的">
 <meta property="og:type" content="blog">
-<meta property="og:title" content="LLM学习日志">
+<meta property="og:title" content="SFT和LoRA学习日志">
 <meta property="og:url" content="http://shadow221213.github.io/2025/09/19/LLM/index.html">
-<meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="模型微调监督微调（SFT）SFT是把x&#x3D;[BOS, s, u, c, a, EOS]作为训练数据，即，微调模型以更好地适应特定任务或领域。BOS是序列起始的特殊token，用于稳定起始状态；s是system内容，是给AI的元指令&#x2F;角色设定，训练时通常和user一同作为条件，但不计损失，推理时必须与训练时采用相同模板，以避免风格或格式不一；u是user的输入内容；c是使用RAG检索到的co">
+<meta property="og:site_name" content="shadow221213&#39;s Blog">
+<meta property="og:description" content="模型微调监督微调（SFT）  SFT是把x&#x3D;[BOS, s, u, c, a, EOS]作为训练数据，微调模型以更好地适应特定任务或领域。 BOSsucaEOS序列起始的特殊token，用于稳定起始状态。给AI的元指令&#x2F;角色设定，训练时通常和user一同作为条件，但不计损失，推理时必须与训练时采用相同模板，以避免风格或格式不一。user的输入内容。使用RAG检索到的上下文片段+多轮回复的">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-09-19T00:39:13.000Z">
-<meta property="article:modified_time" content="2025-10-16T02:21:21.752Z">
+<meta property="article:modified_time" content="2025-10-16T09:05:06.217Z">
 <meta property="article:author" content="shadow221213">
-<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="SFT">
+<meta property="article:tag" content="LoRA">
 <meta name="twitter:card" content="summary">
 
 
 <link rel="canonical" href="http://shadow221213.github.io/2025/09/19/LLM/">
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://shadow221213.github.io/2025/09/19/LLM/","path":"2025/09/19/LLM/","title":"LLM学习日志"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://shadow221213.github.io/2025/09/19/LLM/","path":"2025/09/19/LLM/","title":"SFT和LoRA学习日志"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>LLM学习日志 | Hexo</title>
+<title>SFT和LoRA学习日志 | shadow221213's Blog</title>
   
 
 
@@ -59,7 +60,11 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
 <script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script><script src="/js/bookmark.js" defer></script>
 
-  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+  <script class="next-config" data-name="pdf" type="application/json">{"object_url":{"url":"https://cdnjs.cloudflare.com/ajax/libs/pdfobject/2.3.1/pdfobject.min.js","integrity":"sha256-jI72I8ZLVflVOisZIOaLvRew3tyvzeu6aZXFm7P7dEo="},"url":"/lib/pdf/web/viewer.html"}</script>
+  <script src="/js/third-party/tags/pdf.js" defer></script>
 
 
 
@@ -67,8 +72,15 @@
 
 
   
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
 
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"all","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
 
 
 
@@ -95,13 +107,14 @@
 
     <a href="/" class="brand" rel="start">
       <i class="logo-line"></i>
-      <p class="site-title">Hexo</p>
+      <p class="site-title">shadow221213's Blog</p>
       <i class="logo-line"></i>
     </a>
   </div>
 
   <div class="site-nav-right">
     <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
     </div>
   </div>
 </div>
@@ -110,11 +123,37 @@
 
 <nav class="site-nav">
   <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-commonweal"><a href="/404/" rel="section"><i class="fa fa-heartbeat fa-fw"></i>公益 404</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
   </ul>
 </nav>
 
 
 
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
 
 </header>
         
@@ -153,9 +192,14 @@
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -198,17 +242,17 @@
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
+      <meta itemprop="name" content="shadow221213's Blog">
       <meta itemprop="description" content="">
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="LLM学习日志 | Hexo">
+      <meta itemprop="name" content="SFT和LoRA学习日志 | shadow221213's Blog">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          LLM学习日志
+          SFT和LoRA学习日志
         </h1>
 
         <div class="post-meta-container">
@@ -226,10 +270,30 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2025-10-16 10:21:21" itemprop="dateModified" datetime="2025-10-16T10:21:21+08:00">2025-10-16</time>
+      <time title="修改时间：2025-10-16 17:05:06" itemprop="dateModified" datetime="2025-10-16T17:05:06+08:00">2025-10-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/AI/" itemprop="url" rel="index"><span itemprop="name">AI</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/AI/LLM/" itemprop="url" rel="index"><span itemprop="name">LLM</span></a>
+        </span>
     </span>
 
   
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
     <span class="post-meta-break"></span>
     <span class="post-meta-item" title="本文字数">
       <span class="post-meta-item-icon">
@@ -253,22 +317,21 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><h1 id="模型微调"><a href="#模型微调" class="headerlink" title="模型微调"></a>模型微调</h1><h2 id="监督微调（SFT）"><a href="#监督微调（SFT）" class="headerlink" title="监督微调（SFT）"></a>监督微调（SFT）</h2><p>SFT是把<code>x=[BOS, s, u, c, a, EOS]</code>作为训练数据，即，微调模型以更好地适应特定任务或领域。<br>BOS是序列起始的特殊token，用于稳定起始状态；<br>s是system内容，是给AI的元指令&#x2F;角色设定，训练时通常和user一同作为条件，但不计损失，推理时必须与训练时采用相同模板，以避免风格或格式不一；<br>u是user的输入内容；<br>c是使用RAG检索到的context片段+多轮回复的历史信息（可只用总结作为输入）（或去重按权重处理）；<br>a是高质量assistant给出的回答，用于模仿这种规范化回复。我们只在a的token上计损失，其余位置打mask（label&#x3D;-100）。<br>EOS是序列结束的特殊token，训练时通常只放在assistant段末尾，推理时遇到EOS作为停止条件之一，但注意别把EOS泄露到user&#x2F;system中，会导致模型提前停止或学到错误的停用习惯。</p>
+    <div class="post-body" itemprop="articleBody"><h1 id="模型微调"><a href="#模型微调" class="headerlink" title="模型微调"></a>模型微调</h1><h2 id="监督微调（SFT）"><a href="#监督微调（SFT）" class="headerlink" title="监督微调（SFT）"></a>监督微调（SFT）</h2><div class="pdf-container" data-target="https://arxiv.org/pdf/2501.17161" data-height="500px"></div>
+
+<p>SFT是把<code>x=[BOS, s, u, c, a, EOS]</code>作为训练数据，微调模型以更好地适应特定任务或领域。</p>
+<div class="tabs" id="sft数据格式"><ul class="nav-tabs"><li class="tab active"><a href="#sft数据格式-1">BOS</a></li><li class="tab"><a href="#sft数据格式-2">s</a></li><li class="tab"><a href="#sft数据格式-3">u</a></li><li class="tab"><a href="#sft数据格式-4">c</a></li><li class="tab"><a href="#sft数据格式-5">a</a></li><li class="tab"><a href="#sft数据格式-6">EOS</a></li></ul><div class="tab-content"><div class="tab-pane active" id="sft数据格式-1"><p>序列起始的特殊token，用于稳定起始状态。</p></div><div class="tab-pane" id="sft数据格式-2"><p>给AI的元指令&#x2F;角色设定，训练时通常和user一同作为条件，但不计损失，推理时必须与训练时采用相同模板，以避免风格或格式不一。</p></div><div class="tab-pane" id="sft数据格式-3"><p>user的输入内容。</p></div><div class="tab-pane" id="sft数据格式-4"><p>使用RAG检索到的上下文片段+多轮回复的历史信息（可只用总结作为输入）（或去重按权重处理）。</p></div><div class="tab-pane" id="sft数据格式-5"><p>高质量assistant给出的回答，用于模仿这种规范化回复。我们只在a的token上计损失，其余位置打mask（label&#x3D;-100）。</p></div><div class="tab-pane" id="sft数据格式-6"><p>序列结束的特殊token，训练时通常只放在assistant段末尾，推理时遇到EOS作为停止条件之一，但注意别把EOS泄露到user&#x2F;system中，会导致模型提前停止或学到错误的停用习惯。</p></div></div></div>
+
 <p>SFT采用条件自回归（decoder-only）或条件序到序（encoder-decoder）的极大似然估计，依靠高质量、风格一致的答案将预训练分布旋转到格式合规的子分布。<br>SFT的目标是让模型在给定输入时生成更准确和相关的输出。但容易导致话多或过度自信，常用DPO&#x2F;ORPO收敛风格与拒答策略。</p>
 <p>使用RAG结果输入的方法：</p>
-<ol>
-<li>Soft&#x2F;Prefix Tuning：学习一串可训练的牵入向量，只加在输入头上，用于定风格和格式，可与LoRA叠加。</li>
-<li>Cross-Attn外部记忆：采用Encoder-Decoder架构，将检索到的数据交给Encoder作为记忆，Decoder生成时用Cross-Attention随取随用。可一次编码多次读，对长context场景更稳定。</li>
-<li>KNN-LM混合：对当前上下文信息计算查询向量q，并找到k个最近邻$(k_i, v_i)$，将距离通过温度T转为权重，即$P_{kNN}(\omega) \propto \sum_{i:v_i&#x3D;\omega} exp \big(-\frac{\lVert q - k_i \rVert ^2}{T} \big)$，通过$P(\omega) &#x3D; (1 - \lambda) P_{LM}(\omega) + \lambda P_{kNN}(\omega)$，其中$\lambda \in [0, 1]$可固定也可自适应。</li>
-</ol>
-<h2 id="低秩适应（LoRA）"><a href="#低秩适应（LoRA）" class="headerlink" title="低秩适应（LoRA）"></a>低秩适应（LoRA）</h2><p>标准线性层输出为$y &#x3D; \tilde{W}x$，但LoRA并不直接更新$\tilde{W}$，而是在训练时学习一个低秩增量$\triangle{W} &#x3D; s \cdot AB$，而$\tilde{W} &#x3D; W + \triangle W$，秩$r \ll \min(d_{in}, d_{out})$，缩放$s &#x3D; \frac{\alpha}{r}$。<br>通常将A初始化为全零，B初始化为小随机值，这样使得$\triangle W&#x3D;0$不会破坏预训练能力，即初始函数等价于原始基座，再用$s &#x3D; \frac{\alpha}{r}$控制学习幅度，训练时只更新A和B，冻结W。<br>新增浮点运算次数$FLOPs \approx O(r \cdot (d_{in} + d_{out})$，相比原层$O(d_{in}, d_{out}$很小，几乎不影响推理吞吐。</p>
+<div class="tabs" id="sft"><ul class="nav-tabs"><li class="tab active"><a href="#sft-1">Soft/Prefix Tuning</a></li><li class="tab"><a href="#sft-2">Cross-Attn外部记忆</a></li><li class="tab"><a href="#sft-3">KNN-LM混合</a></li></ul><div class="tab-content"><div class="tab-pane active" id="sft-1"><p>学习一串可训练的牵入向量，只加在输入头上，用于确定风格和格式，可与LoRA叠加。</p></div><div class="tab-pane" id="sft-2"><p>采用Encoder-Decoder架构，将检索到的数据交给Encoder作为记忆，Decoder生成时用Cross-Attention随取随用。可一次编码多次读，对长上下文场景更稳定。</p></div><div class="tab-pane" id="sft-3"><p>对当前上下文信息计算查询向量q，并找到k个最近邻$(k_i, v_i)$，将距离通过温度T转为权重，即$P_{kNN}(\omega) \propto \sum_{i:v_i&#x3D;\omega} exp \big(-\frac{\lVert q - k_i \rVert ^2}{T} \big)$，通过$P(\omega) &#x3D; (1 - \lambda) P_{LM}(\omega) + \lambda P_{kNN}(\omega)$，其中$\lambda \in [0, 1]$可固定也可自适应。</p></div></div></div>
+
+<h2 id="低秩适应（LoRA）"><a href="#低秩适应（LoRA）" class="headerlink" title="低秩适应（LoRA）"></a>低秩适应（LoRA）</h2><div class="pdf-container" data-target="https://arxiv.org/pdf/2106.09685" data-height="500px"></div>
+
+<p>标准线性层输出为$y &#x3D; \tilde{W}x$，但LoRA并不直接更新$\tilde{W}$，而是在训练时学习一个低秩增量$\triangle{W} &#x3D; s \cdot AB$，而$\tilde{W} &#x3D; W + \triangle W$，秩$r \ll \min(d_{in}, d_{out})$，缩放$s &#x3D; \frac{\alpha}{r}$。<br>通常将A初始化为全零，B初始化为小随机值，这样使得$\triangle W&#x3D;0$不会破坏预训练能力，即初始函数等价于原始基座，再用$s &#x3D; \frac{\alpha}{r}$控制学习幅度，训练时只更新A和B，冻结W。<br>新增浮点运算次数$FLOPs \approx O(r \cdot (d_{in} + d_{out}))$，相比原层$O(d_{in}, d_{out})$很小，几乎不影响推理吞吐。</p>
 <p>LoRA优先插在注意力机制上（重语义），适度加在MLP（重风格&#x2F;格式）。<br>基座是指预训练好的原始模型权重$W$，在LoRA训练时被完全冻结。</p>
 <p>LoRA可采用两种推理形态：</p>
-<ol>
-<li>分离加载：先加载基座权重，再加载LoRA适配器，前向时实时加$\triangle Wx$。可一份基座+多个LoRA头，以便随时切换，更灵活，基座可4&#x2F;8bit量化，直接推理，代价是每层多做两次小矩阵乘。可在资源吃紧时采用量化基座，但在合并前需要反量化到FP16再合并，同时也会影响精度。</li>
-<li>合并权重：在非量化的模型副本上把$\triangle W$加回$W$，可以部署成单一权重文件，无LoRA依赖，便于再做整模型量化或裁剪。需要注意的是，量化基座上不能直接合并，需先把量化权重反量化到FP16&#x2F;FP32副本再合并，要切换到另一套LoRA时需回滚到原基座再合并，相对来说较麻烦。</li>
-</ol>
-
+<div class="tabs" id="lora"><ul class="nav-tabs"><li class="tab active"><a href="#lora-1">分离加载</a></li><li class="tab"><a href="#lora-2">合并权重</a></li></ul><div class="tab-content"><div class="tab-pane active" id="lora-1"><p>先加载基座权重，再加载LoRA适配器，前向时实时加$\triangle Wx$。可一份基座+多个LoRA头，以便随时切换，更灵活，基座可4&#x2F;8bit量化，直接推理，代价是每层多做两次小矩阵乘。可在资源吃紧时采用量化基座，但在合并前需要反量化到FP16再合并，同时也会影响精度。</p></div><div class="tab-pane" id="lora-2"><p>在非量化的模型副本上把$\triangle W$加回$W$，可以部署成单一权重文件，无LoRA依赖，便于再做整模型量化或裁剪。需要注意的是，量化基座上不能直接合并，需先把量化权重反量化到FP16&#x2F;FP32副本再合并，要切换到另一套LoRA时需回滚到原基座再合并，相对来说较麻烦。</p></div></div></div>
     </div>
 
     
@@ -292,6 +355,23 @@
       </div>
 
   </div>
+</div>
+
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>shadow221213
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="http://shadow221213.github.io/2025/09/19/LLM/" title="SFT和LoRA学习日志">http://shadow221213.github.io/2025/09/19/LLM/</a>
+  </li>
+  <li class="post-copyright-license">
+      <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <span class="exturl" data-url="aHR0cHM6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL2xpY2Vuc2VzL2J5LW5jLXNhLzQuMC9kZWVkLnpo"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</span> 许可协议。转载请注明出处！
+  </li>
+</ul>
 </div>
 
           <div class="followme">
@@ -322,7 +402,8 @@
 </div>
 
           <div class="post-tags">
-              <a href="/tags/LLM/" rel="tag"><i class="fa fa-tag"></i> LLM</a>
+              <a href="/tags/SFT/" rel="tag"><i class="fa fa-tag"></i> SFT</a>
+              <a href="/tags/LoRA/" rel="tag"><i class="fa fa-tag"></i> LoRA</a>
           </div>
 
         
@@ -345,6 +426,11 @@
 
 
 
+    
+  <div class="comments disqusjs-container">
+    <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+  </div>
+  
 </div>
   </main>
 
@@ -375,6 +461,8 @@
     <span title="站点阅读时长">12 分钟</span>
   </span>
 </div>
+<div class="busuanzi-count">
+</div>
   <div class="powered-by">由 <span class="exturl" data-url="aHR0cHM6Ly9oZXhvLmlv">Hexo</span> & <span class="exturl" data-url="aHR0cHM6Ly90aGVtZS1uZXh0LmpzLm9yZy9tdXNlLw==">NexT.Muse</span> 强力驱动
   </div>
 
@@ -399,6 +487,10 @@
 <noscript>
   <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
 </noscript>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/disqusjs/3.1.0/styles/disqusjs.css" integrity="sha256-E4RzceSomICFY1PT/yDQrN8DsLSwdScDEiQAevHabp0=" crossorigin="anonymous">
+
+<script class="next-config" data-name="disqusjs" type="application/json">{"enable":true,"api":"https://disqus.skk.moe/disqus/","apikey":"LxkBFQ2TX6UrAGyc5paIocxDvsfeWKQlAy3WwCnj37r86ETzEgNJSVKBO9OAiU9J","shortname":"shadow221213","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/disqusjs/3.1.0/disqusjs.es2015.umd.min.js","integrity":"sha256-gdbBT62HLzqWTnXQED3WQL/ItFCuWsA5gd6dM/wgdiE="}}</script>
+<script src="/js/third-party/comments/disqusjs.js" defer></script>
 
 </body>
 </html>

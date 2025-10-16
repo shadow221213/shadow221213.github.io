@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>装饰器学习日志</title>
+    <url>/2025/09/11/Decorator/</url>
+    <content><![CDATA[<h1 id="装饰器"><a href="#装饰器" class="headerlink" title="装饰器"></a>装饰器</h1><p><code>@</code>：装饰器</p>
+<p><code>*args</code>：可变位置参数</p>
+<p><code>**kwargs</code>：可变关键字参数</p>
+<p><code>@wraps</code>：保留被装饰函数的元信息</p>
+<p><code>@lru_cache</code>：缓存函数结果</p>
+<p><code>@repeat</code>：重复执行函数</p>
+<p><code>@sleep_and_retry</code>：睡眠并重试</p>
+<p><code>@limits</code>：限制函数调用频率</p>
+<p><code>@dataclass</code>：数据类</p>
+<p><code>@register</code>：如果程序意外停止，可以执行一些操作</p>
+<p><code>@property</code>：将方法转换为属性</p>
+<p><code>@x.setter</code>：为属性添加写入能力</p>
+<p><code>@x.deleter</code>：为属性添加删除能力</p>
+<p><code>@cached_property</code>：让方法第一次调用时计算，之后读取缓存</p>
+<p><code>@staticmethod</code>：定义静态方法</p>
+<p><code>@classmethod</code>：定义类方法</p>
+<p><code>@singledispatch</code>：允许函数根据第一个参数的类型进行不同的处理</p>
+]]></content>
+      <categories>
+        <category>Python</category>
+      </categories>
+      <tags>
+        <tag>Decorator</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>SFT和LoRA学习日志</title>
+    <url>/2025/09/19/LLM/</url>
+    <content><![CDATA[<h1 id="模型微调"><a href="#模型微调" class="headerlink" title="模型微调"></a>模型微调</h1><h2 id="监督微调（SFT）"><a href="#监督微调（SFT）" class="headerlink" title="监督微调（SFT）"></a>监督微调（SFT）</h2><div class="pdf-container" data-target="https://arxiv.org/pdf/2501.17161" data-height="500px"></div>
+
+<p>SFT是把<code>x=[BOS, s, u, c, a, EOS]</code>作为训练数据，微调模型以更好地适应特定任务或领域。</p>
+<div class="tabs" id="sft数据格式"><ul class="nav-tabs"><li class="tab active"><a href="#sft数据格式-1">BOS</a></li><li class="tab"><a href="#sft数据格式-2">s</a></li><li class="tab"><a href="#sft数据格式-3">u</a></li><li class="tab"><a href="#sft数据格式-4">c</a></li><li class="tab"><a href="#sft数据格式-5">a</a></li><li class="tab"><a href="#sft数据格式-6">EOS</a></li></ul><div class="tab-content"><div class="tab-pane active" id="sft数据格式-1"><p>序列起始的特殊token，用于稳定起始状态。</p></div><div class="tab-pane" id="sft数据格式-2"><p>给AI的元指令&#x2F;角色设定，训练时通常和user一同作为条件，但不计损失，推理时必须与训练时采用相同模板，以避免风格或格式不一。</p></div><div class="tab-pane" id="sft数据格式-3"><p>user的输入内容。</p></div><div class="tab-pane" id="sft数据格式-4"><p>使用RAG检索到的上下文片段+多轮回复的历史信息（可只用总结作为输入）（或去重按权重处理）。</p></div><div class="tab-pane" id="sft数据格式-5"><p>高质量assistant给出的回答，用于模仿这种规范化回复。我们只在a的token上计损失，其余位置打mask（label&#x3D;-100）。</p></div><div class="tab-pane" id="sft数据格式-6"><p>序列结束的特殊token，训练时通常只放在assistant段末尾，推理时遇到EOS作为停止条件之一，但注意别把EOS泄露到user&#x2F;system中，会导致模型提前停止或学到错误的停用习惯。</p></div></div></div>
+
+<p>SFT采用条件自回归（decoder-only）或条件序到序（encoder-decoder）的极大似然估计，依靠高质量、风格一致的答案将预训练分布旋转到格式合规的子分布。<br>SFT的目标是让模型在给定输入时生成更准确和相关的输出。但容易导致话多或过度自信，常用DPO&#x2F;ORPO收敛风格与拒答策略。</p>
+<p>使用RAG结果输入的方法：</p>
+<div class="tabs" id="sft"><ul class="nav-tabs"><li class="tab active"><a href="#sft-1">Soft/Prefix Tuning</a></li><li class="tab"><a href="#sft-2">Cross-Attn外部记忆</a></li><li class="tab"><a href="#sft-3">KNN-LM混合</a></li></ul><div class="tab-content"><div class="tab-pane active" id="sft-1"><p>学习一串可训练的牵入向量，只加在输入头上，用于确定风格和格式，可与LoRA叠加。</p></div><div class="tab-pane" id="sft-2"><p>采用Encoder-Decoder架构，将检索到的数据交给Encoder作为记忆，Decoder生成时用Cross-Attention随取随用。可一次编码多次读，对长上下文场景更稳定。</p></div><div class="tab-pane" id="sft-3"><p>对当前上下文信息计算查询向量q，并找到k个最近邻$(k_i, v_i)$，将距离通过温度T转为权重，即$P_{kNN}(\omega) \propto \sum_{i:v_i&#x3D;\omega} exp \big(-\frac{\lVert q - k_i \rVert ^2}{T} \big)$，通过$P(\omega) &#x3D; (1 - \lambda) P_{LM}(\omega) + \lambda P_{kNN}(\omega)$，其中$\lambda \in [0, 1]$可固定也可自适应。</p></div></div></div>
+
+<h2 id="低秩适应（LoRA）"><a href="#低秩适应（LoRA）" class="headerlink" title="低秩适应（LoRA）"></a>低秩适应（LoRA）</h2><div class="pdf-container" data-target="https://arxiv.org/pdf/2106.09685" data-height="500px"></div>
+
+<p>标准线性层输出为$y &#x3D; \tilde{W}x$，但LoRA并不直接更新$\tilde{W}$，而是在训练时学习一个低秩增量$\triangle{W} &#x3D; s \cdot AB$，而$\tilde{W} &#x3D; W + \triangle W$，秩$r \ll \min(d_{in}, d_{out})$，缩放$s &#x3D; \frac{\alpha}{r}$。<br>通常将A初始化为全零，B初始化为小随机值，这样使得$\triangle W&#x3D;0$不会破坏预训练能力，即初始函数等价于原始基座，再用$s &#x3D; \frac{\alpha}{r}$控制学习幅度，训练时只更新A和B，冻结W。<br>新增浮点运算次数$FLOPs \approx O(r \cdot (d_{in} + d_{out}))$，相比原层$O(d_{in}, d_{out})$很小，几乎不影响推理吞吐。</p>
+<p>LoRA优先插在注意力机制上（重语义），适度加在MLP（重风格&#x2F;格式）。<br>基座是指预训练好的原始模型权重$W$，在LoRA训练时被完全冻结。</p>
+<p>LoRA可采用两种推理形态：</p>
+<div class="tabs" id="lora"><ul class="nav-tabs"><li class="tab active"><a href="#lora-1">分离加载</a></li><li class="tab"><a href="#lora-2">合并权重</a></li></ul><div class="tab-content"><div class="tab-pane active" id="lora-1"><p>先加载基座权重，再加载LoRA适配器，前向时实时加$\triangle Wx$。可一份基座+多个LoRA头，以便随时切换，更灵活，基座可4&#x2F;8bit量化，直接推理，代价是每层多做两次小矩阵乘。可在资源吃紧时采用量化基座，但在合并前需要反量化到FP16再合并，同时也会影响精度。</p></div><div class="tab-pane" id="lora-2"><p>在非量化的模型副本上把$\triangle W$加回$W$，可以部署成单一权重文件，无LoRA依赖，便于再做整模型量化或裁剪。需要注意的是，量化基座上不能直接合并，需先把量化权重反量化到FP16&#x2F;FP32副本再合并，要切换到另一套LoRA时需回滚到原基座再合并，相对来说较麻烦。</p></div></div></div>]]></content>
+      <categories>
+        <category>AI</category>
+        <category>LLM</category>
+      </categories>
+      <tags>
+        <tag>SFT</tag>
+        <tag>LoRA</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Pandas学习日志</title>
+    <url>/2025/09/15/Pandas/</url>
+    <content><![CDATA[<h1 id="Pandas"><a href="#Pandas" class="headerlink" title="Pandas"></a>Pandas</h1><h2 id="读写"><a href="#读写" class="headerlink" title="读写"></a>读写</h2><p><code>pd.read_csv()</code>: 读取CSV文件</p>
+<p><code>pd.to_csv()</code>: 写入CSV文件</p>
+<p><code>df.loc[]</code>: 基于标签选择数据</p>
+<p><code>df.iloc[]</code>: 基于位置选择数据</p>
+<p><code>pd.concat()</code>: 将多个数据按照行或列合并</p>
+<p><code>pd.merge()</code>: 按照某列将两个数据合并</p>
+<p><code>df.head()</code>: 查看前几行数据</p>
+<p><code>df.sample()</code>: 随机抽样数据</p>
+<p><code>df.tail()</code>: 查看后几行数据</p>
+<p><code>df.info()</code>: 查看数据基本信息</p>
+<p><code>df.describe()</code>: 查看数据的基本统计信息，包括均值、中位数、标准差、最小值、最大值等</p>
+<h2 id="多级索引"><a href="#多级索引" class="headerlink" title="多级索引"></a>多级索引</h2><p><code>pd.MultiIndex</code>: 创建多级索引，其中</p>
+<div class="tabs" id="多级索引"><ul class="nav-tabs"><li class="tab active"><a href="#多级索引-1">.from_tuples()</a></li><li class="tab"><a href="#多级索引-2">.from_product()</a></li></ul><div class="tab-content"><div class="tab-pane active" id="多级索引-1"><p>从元组创建多级索引。</p></div><div class="tab-pane" id="多级索引-2"><p>从列表的交叉积创建多级索引。</p></div></div></div>
+
+<p><code>pd.set_index()</code>: 将df的某列转换为多重索引</p>
+<p><code>pd.reset_index()</code>: 将多重索引转换为普通列</p>
+<p><code>df.loc[]</code>: 按顺序选择多级索引数据</p>
+<p><code>df.xs()</code>: 按级别选择多级索引数据</p>
+<p><code>df.sort_index()</code>: 按多重索引排序</p>
+<p><code>df.groupby()</code>: 按多重索引分组</p>
+<p><code>df.fillna()</code>: 填充多重索引的缺失值</p>
+<p><code>df.dropna()</code>: 删除多重索引的缺失值</p>
+<h2 id="性能优化"><a href="#性能优化" class="headerlink" title="性能优化"></a>性能优化</h2><p><code>df.astype()</code>: 将某列转换为指定数据类型；<br>Pandas默认的数据类型是<code>int64</code>和<code>float64</code>，但在某些情况下，使用更小的数据类型可以节省内存空间和提高计算速度。例如，可以将整数类型转换为<code>int8</code>、<code>int16</code>或<code>int32</code>，将浮点数类型转换为<code>float32</code>；<br>对具有重复值的字符串列使用<code>category</code>数据类型，可以显著减少内存使用。因为<code>category</code>类型只存储唯一值的索引，而不是每个值的完整字符串；<br><code>df.downcast()</code>: 将某列转换为更小的数据类型。</p>
+<p>尽量采用<strong>向量化</strong>操作，避免使用<code>for</code>循环遍历DataFrame的行或列。Pandas提供了许多内置函数和方法，可以对整个列或行进行操作，而不需要显式地循环；<br>使用<code>df.apply()</code>、<code>df.applymap()</code>和<code>df.map()</code>等方法对列或行进行操作更高效；<br>使用<code>df.eval()</code>和<code>df.query()</code>方法，可以在DataFrame中执行复杂的表达式和查询，而不需要显式地编写循环或条件语句。</p>
+<p>使用<strong>索引</strong>、<strong>切片</strong>、<strong>分块</strong>操作，可以快速访问和修改DataFrame中的数据，而不需要遍历整个DataFrame。<br>当需要将多个DataFrame合并时（如<code>pd.merge()</code>或<code>pd.concat</code>，特别是在处理大数据集时需要注意优化合并操作。可以使用on和how参数明确指定合并方式，避免不必要的计算。</p>
+<p>通过<code>numba</code>库，可以将Python代码编译为机器码，从而提高代码的执行速度。Pandas与<code>numba</code>集成，可以使用<code>@numba.jit</code>装饰器来加速自定义函数。</p>
+<p>避免<strong>链式赋值</strong>（如<code>df[&#39;A&#39;][df[&#39;A&#39;] &gt; 2] = 0</code>），因为它可能导致意外的结果和性能问题。应使用单明确的赋值语句（如<code>df.loc[df[&#39;A&#39;] &gt; 2, &#39;A&#39;] = 0</code>）。</p>
+<h2 id="数据清洗"><a href="#数据清洗" class="headerlink" title="数据清洗"></a>数据清洗</h2><p><code>df.set_index()</code>: 将某列设置为索引</p>
+<p><code>df.reset_index()</code>: 把索引重置为普通列</p>
+<p><code>df.isna()</code>: 检测缺失值</p>
+<p><code>df.fillna()</code>: 填充缺失值</p>
+<p><code>df.dropna()</code>: 删除缺失值</p>
+<p><code>df.duplicated()</code>: 检测重复值</p>
+<p><code>df.drop_duplicates()</code>: 删除重复值</p>
+<p><code>df.replace()</code>: 替换值</p>
+<p><code>pd.to_numeric()</code>: 将某列转换为数值类型</p>
+<p><code>pd.to_datetime()</code>: 将某列转换为日期时间类型</p>
+<p><code>pd.get_dummies()</code>: 将某列转换为独热编码</p>
+<p><code>df.sort_values()</code>: 按某列排序</p>
+<p><code>df.groupby()</code>: 按某列分组</p>
+<p><code>df.agg()</code>: 对分组数据进行聚合计算</p>
+<p><code>df.eval()</code>: 使用字符串表达式计算新列</p>
+<p><code>df.query()</code>: 使用字符串表达式过滤数据</p>
+<p><code>df.apply()</code>: 对某列或行应用函数</p>
+<p><code>df.applymap()</code>: 对整个DataFrame应用函数</p>
+<p><code>df.map()</code>: 对某列应用函数</p>
+<p><code>pd.date_range()</code>: 生成指定频率的日期范围</p>
+<p><code>pd.Timedelta()</code>: 计算时间差</p>
+<p><code>df.rolling()</code>: 计算滚动窗口统计量（固定窗口大小）</p>
+<p><code>df.expanding()</code>: 计算扩展窗口统计量（只有最小预测数）</p>
+<h2 id="数据分析"><a href="#数据分析" class="headerlink" title="数据分析"></a>数据分析</h2><p><code>df.mean()</code>: 计算均值</p>
+<p><code>df.median()</code>: 计算中位数</p>
+<p><code>df.mode()</code>: 计算众数</p>
+<p><code>df.count()</code>: 计算非缺失值的数量</p>
+<p><code>df.corr()</code>: 计算相关系数，其中</p>
+<div class="tabs" id="相关系数"><ul class="nav-tabs"><li class="tab active"><a href="#相关系数-1">method='pearson'</a></li><li class="tab"><a href="#相关系数-2">method='spearman'</a></li><li class="tab"><a href="#相关系数-3">method='kendall'</a></li></ul><div class="tab-content"><div class="tab-pane active" id="相关系数-1"><p>皮尔逊相关系数，衡量线性关系，其中-1表示完全负相关，1表示完全正相关，0表示无相关性。</p></div><div class="tab-pane" id="相关系数-2"><p>斯皮尔曼相关系数，衡量线性关系，其中-1表示完全负相关，1表示完全正相关，0表示无相关性。</p></div><div class="tab-pane" id="相关系数-3"><p>肯德尔相关系数，衡量线性关系，其中-1表示完全负相关，1表示完全正相关，0表示无相关性。</p></div></div></div>
+
+<p>只用<code>df.corr()</code>可计算相关性矩阵<br>可用<code>import seaborn as sns</code>和<code>sns.heatmap()</code>可视化相关性矩阵</p>
+<p><code>df.plot()</code>: 绘制数据图表，其中<br><code>kind=&#39;line&#39;</code>: 折线图；<br><code>kind=&#39;bar&#39;</code>: 条形图；<br><code>kind=&#39;barh&#39;</code>: 横向条形图；<br><code>kind=&#39;hist&#39;</code>: 直方图；<br><code>kind=&#39;scatter&#39;</code>: 散点图；<br><code>kind=&#39;box&#39;</code>: 箱线图；<br><code>kind=&#39;kde&#39;</code>: 密度分布图；<br><code>kind=&#39;pie&#39;</code>: 饼状图；<br><code>kind=&#39;area&#39;</code>: 面积图</p>
+<p><code>pd.pivot_table()</code>: 创建数据透视表，对一个或多个数值指标按行&#x2F;列维度做聚合（mean、sum、std、count、quantile等）</p>
+<p><code>pd.crosstab()</code>: 计算两个或多个分类变量计算频次&#x2F;比例的列联表</p>
+]]></content>
+      <categories>
+        <category>Python</category>
+      </categories>
+      <tags>
+        <tag>Pandas</tag>
+      </tags>
+  </entry>
+</search>
